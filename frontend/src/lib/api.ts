@@ -9,9 +9,25 @@ const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
 const PYTHON_API_URL = process.env.NEXT_PUBLIC_PYTHON_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
 
 async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, opts);
-  if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
-  return res.json();
+  try {
+    const res = await fetch(`${BASE}${path}`, opts);
+    if (!res.ok) {
+      let message = `API ${res.status}: ${res.statusText}`;
+      try {
+        const err = await res.json();
+        if (err?.detail) {
+          message = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
+        }
+      } catch {}
+      throw new Error(message);
+    }
+    return res.json();
+  } catch (err: any) {
+    if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      throw new Error('Unable to connect to backend server. Please verify the API service is running on ' + BASE);
+    }
+    throw err;
+  }
 }
 
 // ── Types (matching the DB schema with compatibility layers) ─────────────────

@@ -143,9 +143,9 @@ class GoldenRecordOut(_Base):
 class PatientCreateIn(BaseModel):
     given_name: str
     family_name: str
-    dob: date
-    gender: str
-    phone: str
+    dob: Optional[date] = None
+    gender: Optional[str] = "M"
+    phone: Optional[str] = None
     gov_id: Optional[str] = None
     address_line: Optional[str] = None
     city: Optional[str] = None

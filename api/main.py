@@ -37,7 +37,8 @@ import csv
 import io
 import hashlib
 
-from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func, text as sa_text
@@ -76,7 +77,7 @@ ALLOWED_ORIGINS = [o.strip() for o in _cors_env.split(",") if o.strip()]
 
 # Allow any localhost port (covers Next.js moving to 3001/3002/etc when ports are busy)
 # Also supports custom regex via CORS_ORIGIN_REGEX env var (e.g. "https://.*\.vercel\.app")
-_cors_regex = os.getenv("CORS_ORIGIN_REGEX", r"http://localhost:\d+")
+_cors_regex = os.getenv("CORS_ORIGIN_REGEX", r"https?://(localhost|127\.0\.0\.1|.*\.vercel\.app)(:\d+)?")
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,6 +87,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    origin = request.headers.get("origin", "*")
+    headers = {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Headers": "*",
+    }
+    status_code = 500
+    detail = str(exc)
+    if isinstance(exc, HTTPException):
+        status_code = exc.status_code
+        detail = exc.detail
+    return JSONResponse(
+        status_code=status_code,
+        content={"detail": detail},
+        headers=headers,
+    )
 
 
 _OBS_LABEL = {
@@ -248,6 +270,7 @@ def get_appointments(
 @app.post("/api/appointments", response_model=AppointmentOut, status_code=201, tags=["Appointments"])
 def create_appointment(payload: AppointmentIn, db: Session = Depends(get_db)):
     appointment = Appointment(
+        id=uuid.uuid4(),
         patient_id=payload.patient_id,
         clinician_name=payload.clinician_name,
         title=payload.title,
@@ -255,6 +278,7 @@ def create_appointment(payload: AppointmentIn, db: Session = Depends(get_db)):
         appointment_time=payload.appointment_time,
         status=payload.status,
         notes=payload.notes,
+        created_at=datetime.utcnow(),
     )
     db.add(appointment)
     db.commit()
@@ -325,17 +349,44 @@ def create_patient(payload: PatientCreateIn, db: Session = Depends(get_db)):
     """
     Create a new patient record.
     """
+    new_id = uuid.uuid4()
+    raw_gov_id = (payload.gov_id or "").strip()
+    fhir_id = raw_gov_id if raw_gov_id else f"EHR-{uuid.uuid4().hex[:6].upper()}"
+
+    # Check for existing fhir_id to provide a friendly response
+    if raw_gov_id:
+        existing = db.query(FHIRPatient).filter(FHIRPatient.fhir_id == raw_gov_id).first()
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Patient with Gov / FHIR ID '{raw_gov_id}' already exists ({existing.given_name} {existing.family_name})."
+            )
+
+    soundex_code = None
+    nysiis_code = None
+    if payload.family_name:
+        try:
+            soundex_code = jellyfish.soundex(payload.family_name)
+            nysiis_code = jellyfish.nysiis(payload.family_name)
+        except Exception:
+            pass
+
     patient = FHIRPatient(
-        given_name=payload.given_name,
-        family_name=payload.family_name,
+        id=new_id,
+        fhir_id=fhir_id,
+        given_name=payload.given_name.strip() if payload.given_name else None,
+        family_name=payload.family_name.strip() if payload.family_name else None,
         dob=payload.dob,
         gender=payload.gender,
-        phone=payload.phone,
-        address_line=payload.address_line,
-        city=payload.city,
-        state=payload.state,
-        zip=payload.zip,
-        fhir_id=payload.gov_id,
+        phone=payload.phone.strip() if payload.phone else None,
+        address_line=payload.address_line.strip() if payload.address_line else None,
+        city=payload.city.strip() if payload.city else None,
+        state=payload.state.strip() if payload.state else None,
+        zip=payload.zip.strip() if payload.zip else None,
+        name_soundex=soundex_code,
+        name_nysiis=nysiis_code,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
     db.add(patient)
     db.commit()
@@ -401,6 +452,7 @@ def add_patient_observation(patient_id: uuid.UUID, payload: ManualEntryIn, db: S
         obs_datetime = datetime.utcnow()
     
     obs = FHIRObservation(
+        id=uuid.uuid4(),
         patient_id=patient_id,
         obs_type='MANUAL',
         obs_code='NOTE-TEXT',
@@ -408,6 +460,7 @@ def add_patient_observation(patient_id: uuid.UUID, payload: ManualEntryIn, db: S
         notes_text=notes_text,
         obs_datetime=obs_datetime,
         embedding_status='PENDING',
+        created_at=datetime.utcnow(),
     )
     
     db.add(obs)

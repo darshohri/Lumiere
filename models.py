@@ -44,14 +44,14 @@ class SourceSystem(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     system_name: Mapped[str] = mapped_column(String(100), nullable=False)
     system_type: Mapped[Optional[str]] = mapped_column(String(20))
     base_url: Mapped[Optional[str]] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     raw_records = relationship("RawPatientRecord", back_populates="source_system")
@@ -76,7 +76,7 @@ class RawPatientRecord(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     source_system_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("source_systems.id")
@@ -88,10 +88,10 @@ class RawPatientRecord(Base):
         String(15), server_default=text("'PENDING'")
     )
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     source_system = relationship("SourceSystem", back_populates="raw_records")
@@ -109,7 +109,7 @@ class FHIRPatient(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     fhir_id: Mapped[Optional[str]] = mapped_column(String(100), unique=True)
     family_name: Mapped[Optional[str]] = mapped_column(String(100))
@@ -125,10 +125,10 @@ class FHIRPatient(Base):
     name_soundex: Mapped[Optional[str]] = mapped_column(String(20))
     name_nysiis: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     observations = relationship("FHIRObservation", back_populates="patient", cascade="all, delete-orphan")
@@ -157,7 +157,7 @@ class FHIRObservation(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     patient_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("fhir_patients.id", ondelete="CASCADE")
@@ -177,7 +177,7 @@ class FHIRObservation(Base):
         String(20), server_default=text("'PENDING'")
     )
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     patient = relationship("FHIRPatient", back_populates="observations")
@@ -194,7 +194,7 @@ class FHIRMedication(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     patient_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("fhir_patients.id", ondelete="CASCADE")
@@ -209,7 +209,7 @@ class FHIRMedication(Base):
         UUID(as_uuid=True), ForeignKey("raw_patient_records.id")
     )
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     patient = relationship("FHIRPatient", back_populates="medications")
@@ -230,7 +230,7 @@ class EntityResolutionCandidate(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     record_a_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("fhir_patients.id")
@@ -246,7 +246,7 @@ class EntityResolutionCandidate(Base):
     vector_similarity: Mapped[Optional[float]] = mapped_column(Float)
     composite_score: Mapped[Optional[float]] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     record_a = relationship(
@@ -273,7 +273,7 @@ class MasterPatientIndex(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     golden_patient_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     confidence_score: Mapped[Optional[float]] = mapped_column(Float)
@@ -284,10 +284,10 @@ class MasterPatientIndex(Base):
     resolved_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP(timezone=True))
     notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     source_links = relationship("MPISourceLink", back_populates="mpi", cascade="all, delete-orphan")
@@ -303,7 +303,7 @@ class MPISourceLink(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     mpi_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("master_patient_index.id", ondelete="CASCADE")
@@ -313,7 +313,7 @@ class MPISourceLink(Base):
     )
     link_weight: Mapped[Optional[float]] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     mpi = relationship("MasterPatientIndex", back_populates="source_links")
@@ -334,7 +334,7 @@ class AuditLog(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     table_name: Mapped[str] = mapped_column(String(100), nullable=False)
     record_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
@@ -344,7 +344,7 @@ class AuditLog(Base):
     new_value: Mapped[Optional[dict]] = mapped_column(JSONB)
     ip_address = mapped_column(INET, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
 
@@ -366,7 +366,7 @@ class IngestionJob(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     source_system_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("source_systems.id")
@@ -395,7 +395,7 @@ class MLTrainingFeature(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     candidate_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("entity_resolution_candidates.id")
@@ -411,7 +411,7 @@ class MLTrainingFeature(Base):
     label: Mapped[Optional[int]] = mapped_column(SmallInteger)
     dataset_split: Mapped[Optional[str]] = mapped_column(String(10))
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     candidate = relationship("EntityResolutionCandidate", back_populates="ml_features")
@@ -431,7 +431,7 @@ class Appointment(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
     )
     patient_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("fhir_patients.id", ondelete="CASCADE")
@@ -445,7 +445,7 @@ class Appointment(Base):
     )
     notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("NOW()")
+        TIMESTAMP(timezone=True), default=datetime.utcnow, server_default=text("NOW()")
     )
 
     patient = relationship("FHIRPatient", back_populates="appointments")
