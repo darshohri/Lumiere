@@ -1,0 +1,32 @@
+# Environments & secrets
+.env
+.env*.local
+.env.local
+*.env
+
+# Dependencies & build
+node_modules/
+.next/
+dist/
+build/
+out/
+
+# Databases & local sqlite
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+env/
+venv/
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+*.log
