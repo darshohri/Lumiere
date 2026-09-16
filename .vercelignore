@@ -18,3 +18,5 @@ export_for_ml.py
 *.db
 *.sqlite
 *.sqlite3
+frontend/
+scripts/
