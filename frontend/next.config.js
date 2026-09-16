@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingExcludes: {
-    '*': ['public/assets/icons/**'],
+    '*': ['public/assets/icons/**', 'data/**', '*.db'],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
