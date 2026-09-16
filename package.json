@@ -1,0 +1,14 @@
+{
+  "name": "lumiere",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lumiere Medical Intelligence Platform",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && node scripts/copy-dist.js",
+    "start": "npm --prefix frontend run start"
+  },
+  "dependencies": {
+    "next": "^16.2.9"
+  }
+}
