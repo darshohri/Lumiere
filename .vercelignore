@@ -1,0 +1,20 @@
+# Ignore backend & python files from Vercel frontend deployment
+api/
+backend/
+requirements.txt
+data/
+migrations/
+alembic.ini
+Dockerfile.api
+docker-compose.yml
+Procfile
+models.py
+seed.py
+seed_rag.py
+db_test.py
+embed_observations.py
+export_for_ml.py
+*.pdf
+*.db
+*.sqlite
+*.sqlite3
