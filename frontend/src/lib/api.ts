@@ -567,7 +567,7 @@ export interface LumiereMergePair {
  * Calls the Lumiere Python AI engine to resolve identities.
  */
 export async function identifyRecords(query: string): Promise<LumiereIdentifyResult> {
-  const response = await fetch(`${PYTHON_API_URL}/identify`, {
+  const response = await fetch(`${PYTHON_API_URL}/api/identify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query }),
@@ -580,7 +580,7 @@ export async function identifyRecords(query: string): Promise<LumiereIdentifyRes
  * Calls the Lumiere Python AI engine to confirm or reject a merge.
  */
 export async function resolveMergeRecord(pairId: string, action: 'merge' | 'separate') {
-  const response = await fetch(`${PYTHON_API_URL}/resolve-merge`, {
+  const response = await fetch(`${PYTHON_API_URL}/api/resolve-merge`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pair_id: pairId, action }),
