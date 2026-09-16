@@ -5,12 +5,26 @@
  * Base URL comes from NEXT_PUBLIC_API_URL env var, defaults to localhost:8000.
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
-const PYTHON_API_URL = process.env.NEXT_PUBLIC_PYTHON_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
+function getApiBase(): string {
+  if (typeof window !== 'undefined') {
+    // In browser: use relative path '' so requests hit /api/* on the same origin.
+    // This completely eliminates CORS issues, mixed-content errors on Vercel, and port connection failures.
+    const customUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (customUrl && !customUrl.includes('localhost') && !customUrl.includes('127.0.0.1') && customUrl.startsWith('https://')) {
+      return customUrl;
+    }
+    return '';
+  }
+  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8002';
+}
+
+const BASE = getApiBase();
+const PYTHON_API_URL = BASE;
 
 async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
   try {
-    const res = await fetch(`${BASE}${path}`, opts);
+    const url = `${BASE}${path}`;
+    const res = await fetch(url, opts);
     if (!res.ok) {
       let message = `API ${res.status}: ${res.statusText}`;
       try {
@@ -24,7 +38,7 @@ async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
     return res.json();
   } catch (err: any) {
     if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
-      throw new Error('Unable to connect to backend server. Please verify the API service is running on ' + BASE);
+      throw new Error('Unable to connect to clinical data service. Please check your network connection.');
     }
     throw err;
   }
