@@ -1317,8 +1317,14 @@ _embed_model = None
 def _get_embed_model():
     global _embed_model
     if _embed_model is None:
-        from sentence_transformers import SentenceTransformer
-        _embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+        try:
+            from sentence_transformers import SentenceTransformer  # type: ignore
+            _embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+        except ImportError:
+            raise HTTPException(
+                status_code=503,
+                detail="sentence-transformers is not installed. Install it with: pip install sentence-transformers"
+            )
     return _embed_model
 
 
@@ -1469,15 +1475,15 @@ def synthesize_notes_endpoint(db: Session = Depends(get_db)):
 
 # Lazy-import OCR libraries so startup is not blocked if not installed
 try:
-    import pdfplumber as _pdfplumber
+    import pdfplumber as _pdfplumber  # type: ignore
     _HAS_PDFPLUMBER = True
 except ImportError:
     _HAS_PDFPLUMBER = False
 
 try:
-    import pytesseract as _pytesseract
-    from PIL import Image as _PILImage
-    from pdf2image import convert_from_bytes as _pdf_to_images
+    import pytesseract as _pytesseract  # type: ignore
+    from PIL import Image as _PILImage  # type: ignore
+    from pdf2image import convert_from_bytes as _pdf_to_images  # type: ignore
     _HAS_TESSERACT = True
 except ImportError:
     _HAS_TESSERACT = False
@@ -1676,7 +1682,7 @@ def ingest_hl7(body: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="hl7_message field is required")
 
     try:
-        import hl7 as _hl7
+        import hl7 as _hl7  # type: ignore
     except ImportError:
         raise HTTPException(status_code=503, detail="python-hl7 not installed. Run: pip install python-hl7")
 
