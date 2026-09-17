@@ -34,7 +34,7 @@ export default function ClinicalIntelligence() {
              <p className="text-sm font-medium text-clinical-text leading-relaxed">
                Patients registered from <strong>General Hospital</strong> have a 24% higher duplicate probability today.
              </p>
-             <button className="mt-4 px-4 py-2 bg-white border border-clinical-border rounded-lg text-xs font-medium text-clinical-text hover:bg-gray-50 transition-colors w-full">
+             <button onClick={() => alert('Analyze Root Cause: This feature is currently in development and will provide AI-driven analysis of duplicate trends.')} className="mt-4 px-4 py-2 bg-white border border-clinical-border rounded-lg text-xs font-medium text-clinical-text hover:bg-gray-50 transition-colors w-full">
                Analyze Root Cause
              </button>
            </div>
@@ -47,7 +47,7 @@ export default function ClinicalIntelligence() {
              <p className="text-sm font-medium text-red-900 leading-relaxed">
                City Clinic API is currently dropping 'Phone Number' fields during FHIR transmission.
              </p>
-             <button className="mt-4 px-4 py-2 bg-white border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors w-full">
+             <button onClick={() => alert('View API Logs: Log viewer is currently in development. Please check your cloud console for real-time logs.')} className="mt-4 px-4 py-2 bg-white border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors w-full">
                View API Logs
              </button>
            </div>

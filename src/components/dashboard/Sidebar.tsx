@@ -17,9 +17,8 @@ export default function Sidebar() {
   const router = useRouter();
 
   const handleLogout = () => {
-    // Clear any local state or cookies if necessary
-    localStorage.removeItem('user'); // Example
-    router.push('/');
+    localStorage.clear();
+    window.location.href = '/';
   };
 
   return (
