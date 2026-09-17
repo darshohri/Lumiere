@@ -12,6 +12,9 @@ export default function PatientRegistry() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [genderFilter, setGenderFilter] = useState<string>('all');
+  const [ageFilter, setAgeFilter] = useState<string>('all');
   const router = useRouter();
 
   useEffect(() => {
@@ -39,6 +42,22 @@ export default function PatientRegistry() {
     return `${given?.charAt(0) || ''}${family?.charAt(0) || ''}`.toUpperCase() || '?';
   };
 
+  const filteredPatients = patients.filter(p => {
+    if (genderFilter !== 'all') {
+      if ((p.gender || '').toLowerCase() !== genderFilter.toLowerCase()) return false;
+    }
+    if (ageFilter !== 'all') {
+      const age = calculateAge(p.dob);
+      if (age === 'Unknown') return false;
+      const numAge = typeof age === 'number' ? age : parseInt(age as string, 10);
+      if (ageFilter === '0-18' && numAge > 18) return false;
+      if (ageFilter === '19-35' && (numAge < 19 || numAge > 35)) return false;
+      if (ageFilter === '36-60' && (numAge < 36 || numAge > 60)) return false;
+      if (ageFilter === '60+' && numAge <= 60) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="w-full max-w-[1400px] mx-auto p-12">
       
@@ -48,7 +67,10 @@ export default function PatientRegistry() {
           <p className="text-clinical-muted mt-2 text-sm">Manage and review all registered patients across the network.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-clinical-border rounded-lg text-sm font-medium text-clinical-text hover:bg-gray-50 transition-colors shadow-sm">
+          <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors shadow-sm ${isFilterOpen ? 'bg-brand-blue text-white border-brand-blue' : 'bg-white border-clinical-border text-clinical-text hover:bg-gray-50'}`}
+          >
              <Filter size={16} /> Filters
           </button>
           <button 
@@ -59,6 +81,38 @@ export default function PatientRegistry() {
           </button>
         </div>
       </div>
+
+      {isFilterOpen && (
+        <div className="mb-6 bg-white p-5 rounded-2xl border border-clinical-border shadow-sm flex flex-wrap gap-6 animate-in slide-in-from-top-2">
+          <div>
+            <label className="block text-xs font-bold text-clinical-muted uppercase tracking-wider mb-2">Gender</label>
+            <select 
+              value={genderFilter} 
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="bg-gray-50 border border-gray-200 text-clinical-text text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5 outline-none cursor-pointer"
+            >
+              <option value="all">All Genders</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-clinical-muted uppercase tracking-wider mb-2">Age Range</label>
+            <select 
+              value={ageFilter} 
+              onChange={(e) => setAgeFilter(e.target.value)}
+              className="bg-gray-50 border border-gray-200 text-clinical-text text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5 outline-none cursor-pointer"
+            >
+              <option value="all">All Ages</option>
+              <option value="0-18">0 - 18</option>
+              <option value="19-35">19 - 35</option>
+              <option value="36-60">36 - 60</option>
+              <option value="60+">60+</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       <div className="mb-8 relative max-w-2xl">
          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-clinical-muted" size={18} />
@@ -73,11 +127,11 @@ export default function PatientRegistry() {
 
       {loading ? (
         <div className="flex justify-center p-12 text-clinical-muted">Loading patients...</div>
-      ) : patients.length === 0 ? (
-        <div className="flex justify-center p-12 text-clinical-muted">No patients found.</div>
+      ) : filteredPatients.length === 0 ? (
+        <div className="flex justify-center p-12 text-clinical-muted">No patients found matching the criteria.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {patients.map((patient, index) => (
+          {filteredPatients.map((patient, index) => (
             <div key={patient.id} className="bg-white border border-clinical-border rounded-2xl p-6 shadow-sm hover:shadow-float transition-shadow group flex flex-col h-full cursor-pointer" onClick={() => router.push(`/patients/${patient.id}`)}>
               
               <div className="flex justify-between items-start mb-6">

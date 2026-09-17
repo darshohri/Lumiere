@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Users, UserCheck, BrainCircuit, Activity, Settings, LogOut } from 'lucide-react';
 
 const clinicianNavItems = [
@@ -14,6 +14,13 @@ const clinicianNavItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Clear any local state or cookies if necessary
+    localStorage.removeItem('user'); // Example
+    router.push('/');
+  };
 
   return (
     <aside className="w-20 h-screen flex flex-col items-center py-6 shrink-0 hidden md:flex bg-transparent sticky top-0 z-50">
@@ -70,6 +77,7 @@ export default function Sidebar() {
            </div>
         </Link>
         <button 
+          onClick={handleLogout}
           className="group relative w-12 h-12 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
         >
            <LogOut size={24} className="pointer-events-none" />

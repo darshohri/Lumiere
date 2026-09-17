@@ -2,6 +2,7 @@
 
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
+import { askQuestion } from '@/lib/api';
 
 export default function HealthAIPage() {
   const [messages, setMessages] = useState<{ role: 'ai' | 'user', text: string }[]>([
@@ -9,10 +10,18 @@ export default function HealthAIPage() {
   ]);
   const [input, setInput] = useState('');
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
-    setMessages(prev => [...prev, { role: 'user', text: input }, { role: 'ai', text: 'This is a simulated AI response. In production, this would query your Golden Record via an LLM.' }]);
+    const userMessage = input;
     setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    
+    try {
+      const res = await askQuestion(userMessage);
+      setMessages(prev => [...prev, { role: 'ai', text: res.answer }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'ai', text: 'Sorry, I could not process that request.' }]);
+    }
   };
 
   return (

@@ -19,7 +19,7 @@ import { cn } from '@/lib/cn';
 
 const clinicianNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/patients', label: 'Patient Registry', icon: Users },
+  { href: '/registry', label: 'Patient Registry', icon: Users },
   { href: '/matches', label: 'Match Queue', icon: GitMerge },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -72,7 +72,7 @@ export default function DashboardHeader() {
       {/* Navigation - Centered */}
       <nav className="hidden lg:flex items-center gap-1 bg-neutral-100/50 p-1 rounded-xl">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href === '/patients' && pathname.startsWith('/patients'));
+          const isActive = pathname === item.href || (item.href === '/registry' && pathname.startsWith('/registry'));
           const Icon = item.icon;
 
           return (

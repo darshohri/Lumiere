@@ -2,7 +2,7 @@
 
 import {
   User, Settings as SettingsIcon, Bell, Shield, Eye, Mail, ClipboardList, Download, Search,
-  Trash2, AlertTriangle, Database, Plus, FileUp, CheckCircle, X,
+  Trash2, AlertTriangle, Database, Plus, FileUp, CheckCircle, X, LogOut,
 } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { cn } from '@/lib/cn';
@@ -249,7 +249,7 @@ export default function SettingsPage() {
           {activeTab === 'Security' && (
             <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
                <h2 className="text-xl font-bold text-gray-800 mb-8">Security Preferences</h2>
-               <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-[2rem] p-8 shadow-md relative overflow-hidden">
+               <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-[2rem] p-8 shadow-md relative overflow-hidden mb-8">
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -262,6 +262,21 @@ export default function SettingsPage() {
                     </div>
                     <p className="text-gray-300 font-medium max-w-sm mb-6">Your clinical account is currently protected by TOTP-based Two-Factor Authentication.</p>
                     <button className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors backdrop-blur-sm border border-white/10">Manage 2FA</button>
+                  </div>
+               </div>
+
+               <div className="bg-red-50 text-red-900 rounded-[2rem] p-8 shadow-sm relative overflow-hidden border border-red-100">
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                          <LogOut className="text-red-500" size={20} />
+                        </div>
+                        <h4 className="text-lg font-bold">Log out of all devices</h4>
+                      </div>
+                    </div>
+                    <p className="text-red-700 font-medium max-w-sm mb-6">This will log you out of all active sessions across all devices.</p>
+                    <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-sm">Log Out All</button>
                   </div>
                </div>
             </div>
