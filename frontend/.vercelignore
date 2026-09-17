@@ -22,5 +22,3 @@
 
 # Ensure Next.js API routes are never ignored
 !src/app/api/**
-!frontend/src/app/api/**
-

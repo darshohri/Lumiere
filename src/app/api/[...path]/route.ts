@@ -11,6 +11,9 @@ import {
   createPatientRecord,
 } from '../clinicalStore';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 function fallback(req: NextRequest, pathSegments: string[]): NextResponse {
   const method = req.method;
   const subPath = pathSegments.join('/');
